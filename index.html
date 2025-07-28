@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strange Ants - Digital Laboratory</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Main Viewport -->
+    <canvas id="antCanvas"></canvas>
+
+    <!-- Top Menu Bar -->
+    <div id="topMenuBar">
+        <div class="menu-item">
+            <span>File</span>
+            <div class="menu-dropdown">
+                <button id="saveProjectBtn" title="Save entire project configuration">
+                    <i class="fas fa-save"></i> Save Project
+                </button>
+                <button id="loadProjectBtn" title="Load project configuration">
+                    <i class="fas fa-folder-open"></i> Load Project
+                </button>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span>Simulation</span>
+            <div class="menu-dropdown">
+                <button id="resetSimulationBtn" title="Reset simulation to initial state">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+                <button id="clearGridBtn" title="Clear all colors from grid">
+                    <i class="fas fa-eraser"></i> Clear Grid
+                </button>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span>View</span>
+            <div class="menu-dropdown">
+                <button id="resetViewBtn" title="Reset camera view to center">
+                    <i class="fas fa-home"></i> Reset View
+                </button>
+                <button id="toggleGridBtn" title="Toggle grid lines visibility">
+                    <i class="fas fa-th"></i> Toggle Grid
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Left Toolbar -->
+    <div id="leftToolbar">
+        <div class="toolbar-section">
+            <button class="tool-btn active" data-tool="inspect" title="Inspect and select ants or cells">
+                <i class="fas fa-search"></i>
+            </button>
+            <button class="tool-btn" data-tool="add-ant" title="Add ants to the simulation">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="tool-btn" data-tool="draw-food" title="Draw food resources">
+                <i class="fas fa-apple-alt"></i>
+            </button>
+            <button class="tool-btn" data-tool="draw-wall" title="Draw obstacle walls">
+                <i class="fas fa-square"></i>
+            </button>
+            <button class="tool-btn" data-tool="paint-cell" title="Paint cell colors">
+                <i class="fas fa-paint-brush"></i>
+            </button>
+        </div>
+        
+        <div class="toolbar-separator"></div>
+        
+        <div class="toolbar-section">
+            <button class="tool-btn" data-tool="pheromone-a" title="Draw Pheromone Trail A">
+                <i class="fas fa-route"></i>
+                <span class="tool-label">A</span>
+            </button>
+            <button class="tool-btn" data-tool="pheromone-b" title="Draw Pheromone Trail B">
+                <i class="fas fa-route"></i>
+                <span class="tool-label">B</span>
+            </button>
+            <button class="tool-btn" data-tool="charge-positive" title="Add positive charge">
+                <i class="fas fa-plus-circle"></i>
+            </button>
+            <button class="tool-btn" data-tool="charge-negative" title="Add negative charge">
+                <i class="fas fa-minus-circle"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Right Properties Panel -->
+    <div id="rightPanel">
+        <div class="panel-header">
+            <h3>Properties</h3>
+            <button id="togglePropertiesBtn" class="collapse-btn" title="Collapse Properties Panel">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        
+        <div class="panel-content" id="propertiesContent">
+            <!-- Simulation Controls -->
+            <div class="property-section">
+                <h4>Simulation</h4>
+                <div class="controls-group">
+                    <div class="control-row">
+                        <button id="playPauseBtn" class="primary-btn" title="Play/Pause simulation (Space)">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        <button id="stepBtn" class="secondary-btn" title="Step one frame">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+                    <div class="control-row">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="1" max="100" value="50" class="slider">
+                        <span id="speedValue">60</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rule Builder Section -->
+            <div class="property-section">
+                <h4>Behavior Rules</h4>
+                <div class="rule-builder-container">
+                    <!-- Rule Builder will be dynamically populated -->
+                    <div id="ruleBuilder">
+                        <div class="rule-preset-selector">
+                            <label for="rulePreset">Quick Start:</label>
+                            <select id="rulePreset">
+                                <option value="custom">Custom Rules</option>
+                                <option value="langtons" selected>Langton's Ant</option>
+                                <option value="symmetrical">Symmetrical</option>
+                                <option value="spiral">Spiral Builder</option>
+                            </select>
+                        </div>
+                        
+                        <div class="rule-builder-content">
+                            <div class="rule-explanation">
+                                <p><strong>Simple Rules:</strong> Tell the ant what to do when it sees different colors.</p>
+                            </div>
+                            
+                            <div id="rulesList">
+                                <!-- Rules will be dynamically generated here -->
+                            </div>
+                            
+                            <div class="rule-actions">
+                                <button id="addRuleBtn" class="secondary-btn" title="Add a new rule condition">
+                                    <i class="fas fa-plus"></i> Add Rule
+                                </button>
+                                <button id="randomizeRulesBtn" class="secondary-btn" title="Generate random rules">
+                                    <i class="fas fa-dice"></i> Randomize
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ant Configuration -->
+            <div class="property-section">
+                <h4>Ant Colony</h4>
+                <div class="controls-group">
+                    <div class="control-row">
+                        <label for="antCount">Count:</label>
+                        <input type="number" id="antCount" min="1" max="100" value="1" class="number-input">
+                    </div>
+                    <div class="control-row">
+                        <label for="startPosition">Start Position:</label>
+                        <select id="startPosition" class="select-input">
+                            <option value="center">Center</option>
+                            <option value="random">Random</option>
+                            <option value="grid">Grid Layout</option>
+                        </select>
+                    </div>
+                    <div class="control-row">
+                        <label for="startDirection">Start Direction:</label>
+                        <select id="startDirection" class="select-input">
+                            <option value="north">North ↑</option>
+                            <option value="east" selected>East →</option>
+                            <option value="south">South ↓</option>
+                            <option value="west">West ←</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Options (Collapsed by default) -->
+            <div class="property-section collapsible">
+                <div class="section-header" data-section="advanced">
+                    <h4>Advanced Options</h4>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="section-content collapsed" id="advancedOptions">
+                    <div class="control-row">
+                        <label>
+                            <input type="checkbox" id="individualRules"> 
+                            Individual ant rules
+                        </label>
+                    </div>
+                    <div class="control-row">
+                        <label for="maxStates">Max States:</label>
+                        <input type="number" id="maxStates" min="1" max="10" value="2" class="number-input">
+                    </div>
+                    <div class="control-row">
+                        <label for="maxColors">Max Colors:</label>
+                        <input type="number" id="maxColors" min="2" max="12" value="4" class="number-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Timeline/Playback Controls -->
+    <div id="bottomPanel">
+        <div class="timeline-container">
+            <div class="playback-info">
+                <span>Step: <span id="stepCounter">0</span></span>
+                <span>|</span>
+                <span>FPS: <span id="fpsCounter">60</span></span>
+                <span>|</span>
+                <span>Ants: <span id="antCounter">1</span></span>
+            </div>
+            
+            <div class="timeline-controls">
+                <button id="timelineResetBtn" title="Reset to beginning">
+                    <i class="fas fa-fast-backward"></i>
+                </button>
+                <button id="timelineStepBackBtn" title="Step backward">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button id="timelinePlayPauseBtn" title="Play/Pause">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <button id="timelineStepForwardBtn" title="Step forward">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+            
+            <div class="speed-control">
+                <label for="timelineSpeedSlider">Speed:</label>
+                <input type="range" id="timelineSpeedSlider" min="0.1" max="10" value="1" step="0.1" class="slider">
+                <span id="timelineSpeedValue">1x</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="presets.js"></script>
+    <script src="rule-builder.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
