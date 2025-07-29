@@ -7,6 +7,7 @@
 class RuleBuilder {
     constructor() {
         this.rules = {}; // Current rule set
+        this.stateNames = {}; // NEW: Store custom names for states
         this.ruleListElement = document.getElementById('rulesList');
         this.presetSelect = document.getElementById('rulePreset');
         this.ruleCounter = 0;
@@ -80,7 +81,11 @@ class RuleBuilder {
     toggleRuleActions(isCustom) {
         const ruleActions = document.querySelector('.rule-actions');
         if (ruleActions) {
-            ruleActions.style.display = isCustom ? 'flex' : 'none';
+            if (isCustom) {
+                ruleActions.classList.remove('hidden');
+            } else {
+                ruleActions.classList.add('hidden');
+            }
         }
     }
     
@@ -104,6 +109,7 @@ class RuleBuilder {
         
         if (window.presetDefinitions && window.presetDefinitions[actualPresetName]) {
             this.rules = JSON.parse(JSON.stringify(window.presetDefinitions[actualPresetName].rules));
+            this.stateNames = JSON.parse(JSON.stringify(window.presetDefinitions[actualPresetName].stateNames || {}));
             this.renderRules();
             this.notifyRulesChanged();
             this.toggleRuleActions(false); // Hide buttons for presets
@@ -302,19 +308,20 @@ class RuleBuilder {
     createStateElement(state, stateRules) {
         const stateDiv = document.createElement('div');
         stateDiv.className = 'rule-state';
+        const stateName = this.stateNames[state] || `State ${state}`;
         stateDiv.innerHTML = `
             <div class="state-header">
-                <h5>State ${state} <span class="state-description">(Ant behavior mode)</span></h5>
-                <div class="state-actions">
-                    <button class="add-color-btn secondary-btn" title="Add color condition to this state">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button class="remove-state-btn delete-rule-btn" title="Remove this entire state">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
+                <h5 class="state-title" data-state="${state}">${stateName} <span class="state-description">(Ant behavior mode)</span></h5>
+                <button class="remove-state-btn delete-rule-btn" title="Remove this entire state">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="color-conditions">
+            </div>
+            <div class="state-footer">
+                <button class="add-color-btn secondary-btn" title="Add color condition to this state">
+                    <i class="fas fa-plus"></i> Add Condition
+                </button>
             </div>
         `;
         
@@ -329,6 +336,12 @@ class RuleBuilder {
             if (confirm(`Remove State ${state} and all its conditions?`)) {
                 this.removeRule(state);
             }
+        });
+        
+        // Enable renaming on double-click
+        const titleElement = stateDiv.querySelector('.state-title');
+        titleElement.addEventListener('dblclick', (e) => {
+            this.enableStateRename(e.target, state);
         });
         
         // Create UI for each color condition
@@ -393,7 +406,7 @@ class RuleBuilder {
                     <select class="next-state-select">
                         ${Object.keys(this.rules).map(s => 
                             `<option value="${s}" ${parseInt(s) === rule.nextState ? 'selected' : ''}>
-                                State ${s}
+                                ${this.stateNames[s] || `State ${s}`}
                             </option>`
                         ).join('')}
                     </select>
@@ -436,6 +449,47 @@ class RuleBuilder {
     }
     
     /**
+     * Enable renaming of a state title
+     */
+    enableStateRename(titleElement, state) {
+        titleElement.contentEditable = true;
+        titleElement.focus();
+        
+        const range = document.createRange();
+        range.selectNodeContents(titleElement);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        const onBlur = () => {
+            titleElement.contentEditable = false;
+            const newName = titleElement.textContent.trim();
+            if (newName) {
+                this.stateNames[state] = newName;
+            } else {
+                delete this.stateNames[state];
+            }
+            titleElement.removeEventListener('blur', onBlur);
+            titleElement.removeEventListener('keydown', onKeydown);
+            this.renderRules(); // Re-render to update all references
+            this.notifyRulesChanged();
+        };
+        
+        const onKeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                titleElement.blur();
+            } else if (e.key === 'Escape') {
+                titleElement.textContent = this.stateNames[state] || `State ${state}`;
+                titleElement.blur();
+            }
+        };
+        
+        titleElement.addEventListener('blur', onBlur);
+        titleElement.addEventListener('keydown', onKeydown);
+    }
+    
+    /**
      * Get the current rules in the format expected by the simulation
      */
     getRules() {
@@ -462,7 +516,10 @@ class RuleBuilder {
     notifyRulesChanged() {
         // Dispatch a custom event that the main script can listen to
         const event = new CustomEvent('rulesChanged', {
-            detail: { rules: this.getRules() }
+            detail: { 
+                rules: this.getRules(),
+                stateNames: this.stateNames 
+            }
         });
         document.dispatchEvent(event);
     }

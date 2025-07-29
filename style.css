@@ -30,10 +30,10 @@
     --spacing-xxl: 24px;
     
     /* Sizes */
-    --toolbar-width: 60px;
+    --toolbar-width: 50px; /* DECREASED */
     --panel-width: 320px;
     --menu-height: 32px;
-    --timeline-height: 48px;
+    --timeline-height: 40px; /* DECREASED */
     
     /* Transitions */
     --transition-fast: 0.15s ease;
@@ -167,13 +167,14 @@ body {
     top: var(--menu-height);
     left: 0;
     width: var(--toolbar-width);
-    bottom: var(--timeline-height);
+    bottom: 0; /* MODIFIED: Extend to bottom of viewport */
     background-color: var(--bg-secondary);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     padding: var(--spacing-sm) 0;
     z-index: 900;
+    align-items: center; /* ADDED for centering */
 }
 
 .toolbar-section {
@@ -236,7 +237,7 @@ body {
     top: var(--menu-height);
     right: 0;
     width: var(--panel-width);
-    bottom: var(--timeline-height);
+    bottom: 0; /* MODIFIED: Extend to bottom of viewport */
     background-color: var(--bg-secondary);
     border-left: 1px solid var(--border-color);
     display: flex;
@@ -476,6 +477,7 @@ body {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
     font-weight: 500;
+    margin: 2px; /* ADDED: Prevents overlap */
 }
 
 .rule-condition select {
@@ -523,6 +525,7 @@ body {
     border-radius: 6px;
     margin-bottom: var(--spacing-md);
     overflow: hidden;
+    position: relative; /* ADDED: Anchor for absolute children */
 }
 
 .state-header {
@@ -539,6 +542,10 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
+}
+
+.state-title {
+    cursor: text; /* Indicate that the title is editable */
 }
 
 .state-description {
@@ -569,6 +576,12 @@ body {
 
 .color-condition:last-child {
     border-bottom: none;
+}
+
+.state-footer {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary);
 }
 
 .condition-description {
@@ -613,6 +626,34 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.stats-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-size-sm);
+}
+
+.stat-item label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.stat-item span {
+    font-weight: 600;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 3px;
+    min-width: 50px;
+    text-align: right;
 }
 
 .control-group select {
@@ -690,8 +731,8 @@ body {
 #bottomPanel {
     position: fixed;
     bottom: 0;
-    left: var(--toolbar-width);
-    right: var(--panel-width);
+    left: 0; /* MODIFIED: Span full width */
+    right: 0; /* MODIFIED: Span full width */
     height: var(--timeline-height);
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--border-color);

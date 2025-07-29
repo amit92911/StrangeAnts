@@ -438,6 +438,7 @@ let renderRequestId = null;       // ID for render requestAnimationFrame
 let pauseTime = 0; // Added: Store time when paused
 let cellsToUpdate = new Set(); // Combined set for all redraw locations
 let needsFullRedraw = true; // Flag to trigger full grid redraw
+let showGrid = true; // NEW: Toggle for grid visibility
 
 // Listen for rule changes from the rule builder
 document.addEventListener('rulesChanged', (event) => {
@@ -884,6 +885,34 @@ function updateCounters() {
     }
 }
 
+// NEW: Update colony stats in the UI
+function updateColonyStats() {
+    const statPopulation = document.getElementById('statPopulation');
+    const statTotalEnergy = document.getElementById('statTotalEnergy');
+    const statAvgEnergy = document.getElementById('statAvgEnergy');
+    const statGridFood = document.getElementById('statGridFood');
+    
+    if (statPopulation) statPopulation.textContent = ants.length;
+    
+    let totalEnergy = 0;
+    let gridFood = 0;
+    
+    ants.forEach(ant => totalEnergy += ant.energy);
+    
+    if (statTotalEnergy) statTotalEnergy.textContent = Math.round(totalEnergy);
+    if (statAvgEnergy) statAvgEnergy.textContent = ants.length > 0 ? (Math.round(totalEnergy / ants.length * 10) / 10) : 0;
+    
+    // This can be slow, so maybe update less frequently if performance issues arise
+    for (let y = 0; y < gridRows; y++) {
+        for (let x = 0; x < gridCols; x++) {
+            const cell = getCell(x, y);
+            if (cell) gridFood += cell.food;
+        }
+    }
+    
+    if (statGridFood) statGridFood.textContent = Math.round(gridFood);
+}
+
 // Enhanced ant step logic with energy, food, and task management
 function stepSingleAntLogic(ant) {
     if (!grid || !ant) return; // Check individual ant
@@ -1285,6 +1314,33 @@ function drawGrid() {
             }
         }
     }
+    
+    // Draw grid lines if enabled
+    if (showGrid && scale > 4) {
+        ctx.strokeStyle = "rgba(128, 128, 128, 0.2)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        
+        // Vertical lines
+        for (let x = startCol; x <= endCol; x++) {
+            const px = Math.floor(offsetX + x * cellSize * scale);
+            if (px > 0 && px < width) {
+                ctx.moveTo(px, 0);
+                ctx.lineTo(px, height);
+            }
+        }
+        
+        // Horizontal lines
+        for (let y = startRow; y <= endRow; y++) {
+            const py = Math.floor(offsetY + y * cellSize * scale);
+            if (py > 0 && py < height) {
+                ctx.moveTo(0, py);
+                ctx.lineTo(width, py);
+            }
+        }
+        
+        ctx.stroke();
+    }
 
     // Draw Ants (Enable Smoothing)
     setCanvasSmoothing(true);
@@ -1503,6 +1559,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetSimulationBtn = document.getElementById('resetSimulationBtn');
     const resetViewBtn = document.getElementById('resetViewBtn');
     const clearGridBtn = document.getElementById('clearGridBtn');
+    const toggleGridBtn = document.getElementById('toggleGridBtn'); // NEW
     const antCountInput = document.getElementById('antCount');
     const startPositionSelect = document.getElementById('startPosition');
     const startDirectionSelect = document.getElementById('startDirection');
@@ -1515,6 +1572,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timelineResetBtn = document.getElementById('timelineResetBtn');
     const timelineStepForwardBtn = document.getElementById('timelineStepForwardBtn');
     const timelineStepBackBtn = document.getElementById('timelineStepBackBtn');
+    const clearResetBtn = document.getElementById('clearResetBtn'); // NEW
     const timelineSpeedSlider = document.getElementById('timelineSpeedSlider');
     const timelineSpeedValue = document.getElementById('timelineSpeedValue');
 
@@ -1609,6 +1667,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Toggle grid button
+    if (toggleGridBtn) {
+        toggleGridBtn.addEventListener('click', () => {
+            showGrid = !showGrid;
+            needsFullRedraw = true; // Redraw to show/hide grid
+            if (!isRunning) {
+                requestAnimationFrame(draw);
+            }
+        });
+    }
+
     // Speed slider (main)
     if (speedSlider && speedValue) {
         speedSlider.addEventListener('input', () => {
@@ -1662,6 +1731,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    
+    // Main Panel Collapse Button
+    const rightPanel = document.getElementById('rightPanel');
+    const togglePropertiesBtn = document.getElementById('togglePropertiesBtn');
+    
+    if (rightPanel && togglePropertiesBtn) {
+        togglePropertiesBtn.addEventListener('click', () => {
+            rightPanel.classList.toggle('collapsed');
+            const icon = togglePropertiesBtn.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-chevron-right');
+                icon.classList.toggle('fa-chevron-left');
+            }
+        });
+    }
 
     // Pan and Zoom Listeners
     if (canvas) {
@@ -1678,6 +1762,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize simulation
     console.log("Initializing simulation...");
     initSimulation(false, undefined, undefined, true);
+
+    // Clear and Reset button (new)
+    if (clearResetBtn) {
+        clearResetBtn.addEventListener('click', () => {
+            // Stop simulation
+            if (isRunning) {
+                playPauseBtn.click();
+            }
+            
+            // Clear grid
+            for (let y = 0; y < gridRows; y++) {
+                for (let x = 0; x < gridCols; x++) {
+                    const cell = getCell(x, y);
+                    if (cell) {
+                        cell.color = 0;
+                        cell.food = 0;
+                        cell.pheromones = { trail_A: 0, trail_B: 0, trail_C: 0 };
+                        cell.charge = 0;
+                        cell.obstacle = false;
+                        cellsToUpdate.add(`${x},${y}`);
+                    }
+                }
+            }
+            
+            // Reset simulation without restarting
+            initSimulation(false, undefined, undefined, false);
+            
+            needsFullRedraw = true;
+            requestAnimationFrame(draw);
+        });
+    }
 });
 
 // Global listeners
@@ -1758,6 +1873,10 @@ function simulationLoop() {
 
     // Update counters
     updateCounters();
+    
+    if (stepCounter % 20 === 0) { // Update stats every 20 steps to save performance
+        updateColonyStats();
+    }
 
     const timeToNext = Math.max(0, nextStepTime - performance.now());
     simulationTimeoutId = setTimeout(simulationLoop, timeToNext);

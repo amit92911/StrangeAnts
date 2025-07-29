@@ -6,6 +6,9 @@ const presetDefinitions = {
                 { writeColor: 1, move: 'R', nextState: 0 }, // Color 0: Turn Right, Write 1
                 { writeColor: 0, move: 'L', nextState: 0 }  // Color 1: Turn Left, Write 0
             ]
+        },
+        stateNames: {
+            0: "Main Loop"
         }
     },
     constructor: {
@@ -23,6 +26,11 @@ const presetDefinitions = {
                 { writeColor: 0, move: "N", nextState: 1 },
                 { writeColor: 0, move: "U", nextState: 2 }
             ]
+        },
+        stateNames: {
+            0: "Start",
+            1: "Build",
+            2: "Move"
         }
     },
     symmetrical: {
@@ -36,6 +44,9 @@ const presetDefinitions = {
                 { writeColor: 5, move: 'R', nextState: 0 },
                 { writeColor: 0, move: 'R', nextState: 0 }
             ]
+        },
+        stateNames: {
+            0: "Symmetry Rule"
         }
     },
     snowflake: {
@@ -53,6 +64,11 @@ const presetDefinitions = {
                 { writeColor: 0, move: 'N', nextState: 2 },
                 { writeColor: 0, move: 'U', nextState: 0 }
             ]
+        },
+        stateNames: {
+            0: "Branching",
+            1: "Growing",
+            2: "Returning"
         }
     },
     simpleFace: {
@@ -74,7 +90,8 @@ const presetDefinitions = {
             12: [ { writeColor: 9, move: '>', nextState: 13 } ],// Paint Mouth_End_L (Pink), Move R (towards nose)
             13: [ { writeColor: 0, move: '>', nextState: 14 } ],// Skip, Move R (center under nose)
             14: [ { writeColor: 0, move: '^', nextState: -1 } ] // Skip, Move U (to nose), HALT
-        }
+        },
+        stateNames: {}
     },
     archimedesSpiral: {
         name: "Archimedes Spiral",
@@ -92,6 +109,9 @@ const presetDefinitions = {
                 { writeColor: 10, move: 'R', nextState: 0 },
                 { writeColor: 0, move: 'R', nextState: 0 }
             ]
+        },
+        stateNames: {
+            0: "Spiral Arm"
         }
     },
     logarithmicSpiral: {
@@ -111,6 +131,9 @@ const presetDefinitions = {
                 { writeColor: 11, move: 'L', nextState: 0 },
                 { writeColor: 0, move: 'R', nextState: 0 }
             ]
+        },
+        stateNames: {
+            0: "Expanding Curve"
         }
     },
     squareFiller: {
@@ -127,6 +150,9 @@ const presetDefinitions = {
                 { writeColor: 8, move: 'L', nextState: 0 },
                 { writeColor: 0, move: 'R', nextState: 0 }
             ]
+        },
+        stateNames: {
+            0: "Filling Pattern"
         }
     },
     simpleTuringMachine: {
@@ -148,6 +174,12 @@ const presetDefinitions = {
                 { writeColor: 1, move: '>', nextState: 1 }, // Read 0 (Orig: 1, U, 1) -> Reverse R, goto 1
                 { writeColor: 0, move: '<', nextState: 2 }  // Read 1 (Orig: 0, N, 0) -> Continue L, goto 0
             ]
+        },
+        stateNames: {
+            0: "State A (Right)",
+            1: "State B (Right)",
+            2: "State A (Left)",
+            3: "State B (Left)"
         }
     },
     busyBeaver3: {
@@ -167,6 +199,11 @@ const presetDefinitions = {
             ]
             // Note: State -1 is implicitly handled as HALT by script.js
             // No explicit definition needed here for state -1
+        },
+        stateNames: {
+            0: "State A",
+            1: "State B",
+            2: "State C"
         }
     },
     busyBeaver4: {
@@ -189,6 +226,12 @@ const presetDefinitions = {
                 { writeColor: 0, move: '>', nextState: 0 }  // Reads 1 (TM: 0,R,A)
             ]
             // State -1 implicitly handled as HALT
+        },
+        stateNames: {
+            0: "State A",
+            1: "State B",
+            2: "State C",
+            3: "State D"
         }
     },
     busyBeaver5: {
@@ -215,6 +258,13 @@ const presetDefinitions = {
                 { writeColor: 0, move: '<', nextState: 0 }  // Reads 1 (TM: 0,L,A)
             ]
             // State -1 implicitly handled as HALT
+        },
+        stateNames: {
+            0: "State A",
+            1: "State B",
+            2: "State C",
+            3: "State D",
+            4: "State E"
         }
     }
 }; 

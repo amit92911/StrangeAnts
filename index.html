@@ -143,7 +143,7 @@
                                 <!-- Rules will be dynamically generated here -->
                             </div>
                             
-                            <div class="rule-actions">
+                            <div class="rule-actions hidden">
                                 <button id="addRuleBtn" class="secondary-btn" title="Add a new rule condition">
                                     <i class="fas fa-plus"></i> Add Rule
                                 </button>
@@ -181,6 +181,29 @@
                             <option value="west">West ←</option>
                             <option value="random">Random</option>
                         </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colony Stats -->
+            <div class="property-section">
+                <h4>Colony Stats</h4>
+                <div class="stats-group">
+                    <div class="stat-item">
+                        <label>Population:</label>
+                        <span id="statPopulation">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <label>Total Energy:</label>
+                        <span id="statTotalEnergy">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <label>Avg. Energy:</label>
+                        <span id="statAvgEnergy">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <label>Grid Food:</label>
+                        <span id="statGridFood">0</span>
                     </div>
                 </div>
             </div>
@@ -234,6 +257,9 @@
                 </button>
                 <button id="timelineStepForwardBtn" title="Step forward">
                     <i class="fas fa-step-forward"></i>
+                </button>
+                <button id="clearResetBtn" title="Clear Grid and Reset Ants">
+                    <i class="fas fa-eraser"></i>
                 </button>
             </div>
             
